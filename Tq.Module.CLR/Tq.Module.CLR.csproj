@@ -11,4 +11,8 @@
       <ProjectReference Include="..\..\target-LLVM\Tq.Module.LLVM\Tq.Module.LLVM.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
+    </ItemGroup>
+
 </Project>

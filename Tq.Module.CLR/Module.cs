@@ -24,7 +24,7 @@ public class Module: IModule
                 
                 LanguageOutput = new OmegaOutputConfiguration() {
                     BakeGenerics = true,
-                    UnnestMembersOption = UnnestMembersOptions.None,
+                    AbstractingOptions = AbstractingOptions.UnwrapNamespaces,
                     
                     MemoryUnit = 8,
                     NativeIntegerSize = 32,
@@ -33,7 +33,7 @@ public class Module: IModule
                     OmegaAllowedFeatures = OmegaAllowedFeatures.None,
                 },
                 
-                CompilerInvoke = Compiler.Compile
+                CompilerInvoke = (a, b) => new Compiler().Compile(a, b)
             },
         ]
     };
