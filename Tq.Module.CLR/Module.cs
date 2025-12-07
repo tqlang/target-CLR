@@ -9,8 +9,8 @@ public class Module: IModule
 {
     public ModuleConfiguration Config { get; } = new()
     {
-        Name = "LLVM",
-        Description = "Provides targets for compiling with LLVM",
+        Name = "CLR",
+        Description = "Provides targets for compiling to microsoft's Common Language Runtime assemblies",
         
         Author = "lumi2021",
         Version = "1.0.0",
@@ -24,7 +24,7 @@ public class Module: IModule
                 
                 LanguageOutput = new OmegaOutputConfiguration() {
                     BakeGenerics = true,
-                    AbstractingOptions = AbstractingOptions.UnwrapNamespaces,
+                    AbstractingOptions = AbstractingOptions.NoNamespaces,
                     
                     MemoryUnit = 8,
                     NativeIntegerSize = 32,
