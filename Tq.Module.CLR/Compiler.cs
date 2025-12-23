@@ -1,8 +1,8 @@
 using System.Reflection;
 using System.Reflection.Emit;
-using Tq.Realizeer.Core.Program;
-using Tq.Realizeer.Core.Program.Builder;
-using Tq.Realizeer.Core.Program.Member;
+using Tq.Realizer.Core.Program;
+using Tq.Realizer.Core.Program.Builder;
+using Tq.Realizer.Core.Program.Member;
 using Tq.Realizer.Core.Configuration.LangOutput;
 
 namespace Tq.Module.CLR;
@@ -14,42 +14,44 @@ public class Compiler
     public void Compile(RealizerProgram program, IOutputConfiguration config)
     {
         Console.WriteLine("Compiling to .NET CLR...");
-
-        var asmName = new AssemblyName(program.Name);
-        var asmBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndCollect);
-        
-        DefineModules(program, asmBuilder);
+        DefineModules(program);
 
     }
 
-    private void DefineModules(RealizerProgram program, AssemblyBuilder assemblyBuilder)
+    private void DefineModules(RealizerProgram program)
     {
         foreach (var i in program.Modules)
         {
+            if (i.Name == "System") continue;
+            
+            var asmName = new AssemblyName(program.Name);
+            
+            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndCollect);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule(i.Name);
-            foreach (var j in i.GetMembers()) DefineTypesRecursive(moduleBuilder, j);
+            var moduleRoot = moduleBuilder.DefineType("<root>", TypeAttributes.Sealed | TypeAttributes.Class);
+            
+            foreach (var j in i.GetMembers<RealizerStructure>())
+                DefineTypesRecursive(moduleBuilder, moduleRoot, j);
+
+            foreach (var j in i.GetMembers())
+                DefineMembersRecursive(moduleBuilder, moduleRoot, j);
         }
     }
 
-    private void DefineTypesRecursive(ModuleBuilder mbuilder, RealizerMember member)
+    private void DefineTypesRecursive(ModuleBuilder mbuilder, TypeBuilder tbuilder, RealizerStructure structure)
+    {
+        var typeBuilder = mbuilder.DefineType(structure.Name, TypeAttributes.Class);
+        _membersMap.Add(structure, typeBuilder);
+    }
+
+    private void DefineMembersRecursive(ModuleBuilder mbuilder, TypeBuilder tbuilder, RealizerMember member)
     {
         switch (member)
         {
-            case RealizerStructure @structure:
-            {
-                var typeBuilder = mbuilder.DefineType(structure.Name, TypeAttributes.Class);
-                _membersMap.Add(structure, typeBuilder);
-            } break;
-            
-            //case RealizerTypedef @typedef:
-            //{
-            //    var enumBuilder = mbuilder.DefineEnum(typedef.Name, TypeAttributes.Public, null!);
-            //} break;
-            
+            case RealizerStructure @struct: break;
             default: throw new NotImplementedException();
         }
     }
-    
     
     private struct MembersMap()
     {
